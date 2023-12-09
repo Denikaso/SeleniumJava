@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class BusStopsTest {
+public class BusStops {
     private WebDriver driver;
 
-    public BusStopsTest(WebDriver driver) {
+    public BusStops(WebDriver driver) {
         this.driver = driver;
     }
 
