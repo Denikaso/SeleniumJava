@@ -1,57 +1,45 @@
 package org.example;
 
+import lombok.Data;
+import lombok.val;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+@Data
 public class BusStops {
-    private WebDriver driver;
+    private static final String SITE =  "https://m.cdsvyatka.com/";
+    private final WebDriver driver;
+    private String route;
 
-    public BusStops(WebDriver driver) {
-        this.driver = driver;
+    public BusStops(WebDriver driver, String route){
+        this.driver =driver;
+        this.route = route;
     }
 
-    public void execute() {
-        // Шаг 1: Открытие сайта
-        driver.get("https://m.cdsvyatka.com/");
+    public void Execute() {
+        driver.get(SITE);
+        route = HandleRoute(route);
 
-        // Находим выпадающий список маршрутов
-        Select routeDropdown = new Select(driver.findElement(By.id("marshlist")));
+        val routeDropdown = new Select(driver.findElement(By.id("marshlist")));
+        routeDropdown.selectByValue(route);
 
-        // Выбираем нужный маршрут (например, 23 автобус)
-        routeDropdown.selectByValue("1023");
-
-        // Находим кнопку "Найти" внутри формы
-        WebElement searchButton = driver.findElement(By.xpath("//form[@id='marshSearch']//input[@value='Найти']"));
-
-        // Нажимаем кнопку для выполнения поиска
+        val searchButton = driver.findElement(By.xpath("//form[@id='marshSearch']//input[@value='Найти']"));
         searchButton.click();
 
-        // Ожидание загрузки новой страницы (например, по заголовку)
-        WebDriverWait wait = new WebDriverWait(driver, 10);
+        val wait = new WebDriverWait(driver, 10);
         wait.until(ExpectedConditions.titleContains("Остановки на маршруте"));
-
-        // Шаг 2: Получение списка остановок
-        List<WebElement> stopElements = driver.findElements(By.xpath("//a[contains(@href, 'prediction.php?busstop=')]"));
-
-        // Используем множество для хранения уникальных значений
-        Set<String> uniqueStops = new HashSet<>();
-
-        for (WebElement stopElement : stopElements) {
-            uniqueStops.add(stopElement.getText());
+    }
+    public String HandleRoute(String route) {
+        if (route.matches("Авт \\d{1,2}")) {
+            return "10" + route.substring(4);
+        } else if (route.matches("Авт \\d{1,3}")) {
+            return "3" + route.substring(4);
+        } else if (route.matches("Тролл Т\\d{1,2}")) {
+            return "500" + route.substring(7, 8) + "0";
         }
-
-        // Выводим уникальные остановки в консоль
-        System.out.println("Список остановок:");
-        for (String uniqueStop : uniqueStops) {
-            System.out.println(uniqueStop);
-        }
+        return null;
     }
 }
